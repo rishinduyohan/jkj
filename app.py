@@ -15,6 +15,13 @@ from database import Database
 from analytics import AnalyticsEngine
 from components import THEME, get_meal_color, StatCard, MealPill, ChartContainer
 
+# Windows taskbar grouping & icon fix
+try:
+    import ctypes
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('mybudgettracker.desktop.app.v1')
+except Exception:
+    pass
+
 # Global App Styling Configurations
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -37,6 +44,9 @@ CATEGORIES = [
 class BudgetTrackerApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        # Setup Application Icon
+        self._setup_app_icon()
 
         # Window Settings
         self.title("My Budget Tracker")
@@ -75,6 +85,42 @@ class BudgetTrackerApp(ctk.CTk):
         # Check First Time Setup
         self.after(300, self.check_first_time_setup)
 
+    def _setup_app_icon(self):
+        """Configure application window and taskbar icon."""
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        possible_ico = [
+            os.path.join(base_dir, "icon.ico"),
+            os.path.join(base_dir, "assets", "icon.ico")
+        ]
+        possible_png = [
+            os.path.join(base_dir, "icon.png"),
+            os.path.join(base_dir, "assets", "icon.png")
+        ]
+
+        self.icon_ico_path = next((p for p in possible_ico if os.path.exists(p)), None)
+        self.icon_png_path = next((p for p in possible_png if os.path.exists(p)), None)
+
+        if self.icon_ico_path:
+            try:
+                self.iconbitmap(self.icon_ico_path)
+            except Exception:
+                pass
+        elif self.icon_png_path:
+            try:
+                from PIL import ImageTk, Image
+                img = ImageTk.PhotoImage(Image.open(self.icon_png_path))
+                self.iconphoto(True, img)
+            except Exception:
+                pass
+
+    def _apply_modal_icon(self, modal):
+        """Apply icon to popup modal windows."""
+        if hasattr(self, "icon_ico_path") and self.icon_ico_path and os.path.exists(self.icon_ico_path):
+            try:
+                modal.iconbitmap(self.icon_ico_path)
+            except Exception:
+                pass
+
     def check_first_time_setup(self):
         """Prompt user on first launch to set their estimated monthly budget."""
         is_done = self.db.get_setting("first_setup_done", "false")
@@ -90,6 +136,7 @@ class BudgetTrackerApp(ctk.CTk):
         modal.configure(fg_color=THEME["bg_dark"])
         modal.transient(self)
         modal.grab_set()
+        self._apply_modal_icon(modal)
 
         m_frame = ctk.CTkFrame(
             modal, 
@@ -1493,6 +1540,7 @@ class BudgetTrackerApp(ctk.CTk):
         modal.configure(fg_color=THEME["bg_dark"])
         modal.transient(self)
         modal.grab_set()
+        self._apply_modal_icon(modal)
 
         # Modal Container
         m_frame = ctk.CTkFrame(

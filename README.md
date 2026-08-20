@@ -70,6 +70,9 @@ Budget tracker/
 ├── analytics.py        # Forecasting engine, budget range calculations, and report generator
 ├── test_backend.py     # Backend unit & integration test suite
 ├── test_gui.py         # GUI automation and headless verification test suite
+├── create_icon.py      # Script to render multi-resolution icon assets
+├── icon.ico            # Windows application & taskbar icon (256x256 -> 16x16)
+├── icon.png            # High-resolution application branding icon
 ├── requirements.txt    # Python dependencies (customtkinter, matplotlib, pillow)
 ├── run_app.bat         # 1-click Windows launcher
 └── README.md           # Documentation
