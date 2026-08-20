@@ -9,6 +9,7 @@ from app import BudgetTrackerApp
 class TestBudgetTrackerGUI(unittest.TestCase):
     def setUp(self):
         self.app = BudgetTrackerApp()
+        self.app.db.set_setting("first_setup_done", "true")
         self.app.withdraw()  # Don't show window on screen during automated test
 
     def tearDown(self):

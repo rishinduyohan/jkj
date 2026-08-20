@@ -61,19 +61,19 @@ class StatCard(ctk.CTkFrame):
         
         # Header Row (Icon + Title)
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        header_frame.pack(fill="x", padx=16, pady=(14, 4))
+        header_frame.pack(fill="x", padx=16, pady=(12, 2))
         
-        icon_lbl = ctk.CTkLabel(header_frame, text=icon_text, font=("Segoe UI Emoji", 16))
+        icon_lbl = ctk.CTkLabel(header_frame, text=icon_text, font=("Segoe UI Emoji", 15))
         icon_lbl.pack(side="left", padx=(0, 6))
         
         self.title_lbl = ctk.CTkLabel(header_frame, text=title.upper(), 
-                                      font=("Segoe UI", 10, "bold"), 
+                                      font=("Segoe UI", 10), 
                                       text_color=THEME["text_muted"])
         self.title_lbl.pack(side="left")
         
         # Main Value
         self.value_lbl = ctk.CTkLabel(self, text=value, 
-                                      font=("Segoe UI", 22, "bold"), 
+                                      font=("Segoe UI", 20), 
                                       text_color=accent_color)
         self.value_lbl.pack(anchor="w", padx=16, pady=(2, 2))
         
@@ -100,11 +100,11 @@ class MealPill(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
         
         # Color Stripe / Indicator Dot
-        dot = ctk.CTkLabel(self, text="●", text_color=color, font=("Segoe UI", 16))
+        dot = ctk.CTkLabel(self, text="●", text_color=color, font=("Segoe UI", 14))
         dot.grid(row=0, column=0, rowspan=2, padx=(12, 6), pady=8)
         
         # Meal Name
-        self.name_lbl = ctk.CTkLabel(self, text=meal_name, font=("Segoe UI", 13, "bold"), text_color=THEME["text_main"])
+        self.name_lbl = ctk.CTkLabel(self, text=meal_name, font=("Segoe UI", 12), text_color=THEME["text_main"])
         self.name_lbl.grid(row=0, column=1, sticky="w", padx=2, pady=(8, 0))
         
         # Target info
@@ -112,7 +112,7 @@ class MealPill(ctk.CTkFrame):
         self.tgt_lbl.grid(row=1, column=1, sticky="w", padx=2, pady=(0, 8))
         
         # Amount Spent
-        self.amt_lbl = ctk.CTkLabel(self, text=amount_str, font=("Segoe UI", 14, "bold"), text_color=color)
+        self.amt_lbl = ctk.CTkLabel(self, text=amount_str, font=("Segoe UI", 13), text_color=color)
         self.amt_lbl.grid(row=0, column=2, rowspan=2, sticky="e", padx=(8, 14), pady=8)
 
 
