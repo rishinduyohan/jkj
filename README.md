@@ -1,4 +1,4 @@
-# 💎 AuraBudget - Desktop Budget & Meal Tracker
+# 💰 My Budget Tracker - Desktop Budget & Meal Tracker
 
 A smooth, modern Python desktop application to track daily meal expenses (**Breakfast**, **Lunch**, **Dinner**, and **Other**), calculate approximate monthly budget projections, and generate visual monthly and yearly reports.
 

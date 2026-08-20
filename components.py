@@ -11,25 +11,27 @@ matplotlib.use("TkAgg")
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# Color Theme Palette
+# Color Theme Palette - Modern Obsidian & Indigo Palette
 THEME = {
-    "bg_dark": "#0F172A",          # Slate 900
-    "card_dark": "#1E293B",        # Slate 800
-    "card_hover": "#334155",       # Slate 700
-    "sidebar_dark": "#0A0F1D",     # Deeper Slate
-    "accent_primary": "#3B82F6",    # Blue 500
-    "accent_hover": "#2563EB",      # Blue 600
+    "bg_dark": "#0B0F19",          # Deep obsidian background
+    "card_dark": "#111827",        # Sleek dark card
+    "card_hover": "#1F2937",       # Elevated card hover
+    "sidebar_dark": "#070B12",     # Darkest sidebar background
+    "border_dark": "#1F2937",      # Subtle border
+    "accent_primary": "#4F46E5",    # Modern Indigo 600
+    "accent_hover": "#4338CA",      # Indigo 700
+    "accent_light": "#818CF8",      # Indigo 400
     
     # Meal specific accent colors
-    "meal_breakfast": "#F59E0B",   # Amber 500
-    "meal_lunch": "#10B981",       # Emerald 500
-    "meal_dinner": "#6366F1",      # Indigo 500
-    "meal_other": "#8B5CF6",       # Purple 500
+    "meal_breakfast": "#F59E0B",   # Amber / Gold
+    "meal_lunch": "#10B981",       # Emerald Green
+    "meal_dinner": "#8B5CF6",      # Violet / Purple
+    "meal_other": "#EC4899",       # Rose / Pink
     
     # Text colors
-    "text_main": "#F8FAFC",
-    "text_muted": "#94A3B8",
-    "text_sub": "#64748B",
+    "text_main": "#F8FAFC",        # Crisp Slate 50
+    "text_muted": "#94A3B8",       # Slate 400
+    "text_sub": "#64748B",         # Slate 500
     
     # Status colors
     "success": "#10B981",
@@ -52,7 +54,8 @@ class StatCard(ctk.CTkFrame):
     """Modern KPI / Summary Stat Card with title, value, subtext, and color indicator."""
     def __init__(self, master, title: str, value: str, subtext: str = "", 
                  accent_color: str = THEME["accent_primary"], icon_text: str = "💳", **kwargs):
-        super().__init__(master, fg_color=THEME["card_dark"], corner_radius=12, border_width=1, border_color="#334155", **kwargs)
+        super().__init__(master, fg_color=THEME["card_dark"], corner_radius=12, 
+                         border_width=1, border_color=THEME["border_dark"], **kwargs)
         
         self.grid_columnconfigure(0, weight=1)
         
@@ -60,11 +63,11 @@ class StatCard(ctk.CTkFrame):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=16, pady=(14, 4))
         
-        icon_lbl = ctk.CTkLabel(header_frame, text=icon_text, font=("Segoe UI Emoji", 18))
+        icon_lbl = ctk.CTkLabel(header_frame, text=icon_text, font=("Segoe UI Emoji", 16))
         icon_lbl.pack(side="left", padx=(0, 6))
         
         self.title_lbl = ctk.CTkLabel(header_frame, text=title.upper(), 
-                                      font=("Segoe UI", 11, "bold"), 
+                                      font=("Segoe UI", 10, "bold"), 
                                       text_color=THEME["text_muted"])
         self.title_lbl.pack(side="left")
         
@@ -92,7 +95,7 @@ class MealPill(ctk.CTkFrame):
                  command: Optional[Callable] = None, **kwargs):
         color = get_meal_color(meal_name)
         super().__init__(master, fg_color=THEME["card_dark"], corner_radius=10, 
-                         border_width=1, border_color="#334155", **kwargs)
+                         border_width=1, border_color=THEME["border_dark"], **kwargs)
         
         self.grid_columnconfigure(1, weight=1)
         
@@ -120,7 +123,8 @@ class BudgetRangeGauge(ctk.CTkFrame):
     With comparison to User Budget.
     """
     def __init__(self, master, **kwargs):
-        super().__init__(master, fg_color=THEME["card_dark"], corner_radius=14, border_width=1, border_color="#334155", **kwargs)
+        super().__init__(master, fg_color=THEME["card_dark"], corner_radius=14, 
+                         border_width=1, border_color=THEME["border_dark"], **kwargs)
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -139,29 +143,29 @@ class BudgetRangeGauge(ctk.CTkFrame):
                                          text_color="#10B981", 
                                          fg_color="#064E3B", 
                                          corner_radius=6, 
-                                         padx=8, pady=2)
+                                         padx=10, pady=3)
         self.health_badge.pack(side="right")
         
         # Range Bar
         self.progress = ctk.CTkProgressBar(self, height=12, corner_radius=6, 
-                                           progress_color="#3B82F6", fg_color="#334155")
+                                           progress_color=THEME["accent_primary"], fg_color="#1E293B")
         self.progress.grid(row=1, column=0, columnspan=3, sticky="ew", padx=16, pady=(4, 12))
         self.progress.set(0.0)
         
         # Range columns
-        self.min_card = ctk.CTkFrame(self, fg_color="#0F172A", corner_radius=8)
+        self.min_card = ctk.CTkFrame(self, fg_color="#0B0F19", corner_radius=8, border_width=1, border_color=THEME["border_dark"])
         self.min_card.grid(row=2, column=0, sticky="ew", padx=(16, 6), pady=(0, 14))
         ctk.CTkLabel(self.min_card, text="MIN ESTIMATE", font=("Segoe UI", 10, "bold"), text_color=THEME["text_muted"]).pack(pady=(6, 0))
         self.min_val = ctk.CTkLabel(self.min_card, text="$0.00", font=("Segoe UI", 13, "bold"), text_color="#10B981")
         self.min_val.pack(pady=(0, 6))
         
-        self.exp_card = ctk.CTkFrame(self, fg_color="#0F172A", corner_radius=8)
+        self.exp_card = ctk.CTkFrame(self, fg_color="#0B0F19", corner_radius=8, border_width=1, border_color=THEME["border_dark"])
         self.exp_card.grid(row=2, column=1, sticky="ew", padx=6, pady=(0, 14))
         ctk.CTkLabel(self.exp_card, text="EXPECTED BURN", font=("Segoe UI", 10, "bold"), text_color=THEME["text_muted"]).pack(pady=(6, 0))
-        self.exp_val = ctk.CTkLabel(self.exp_card, text="$0.00", font=("Segoe UI", 13, "bold"), text_color="#3B82F6")
+        self.exp_val = ctk.CTkLabel(self.exp_card, text="$0.00", font=("Segoe UI", 13, "bold"), text_color="#818CF8")
         self.exp_val.pack(pady=(0, 6))
         
-        self.max_card = ctk.CTkFrame(self, fg_color="#0F172A", corner_radius=8)
+        self.max_card = ctk.CTkFrame(self, fg_color="#0B0F19", corner_radius=8, border_width=1, border_color=THEME["border_dark"])
         self.max_card.grid(row=2, column=2, sticky="ew", padx=(6, 16), pady=(0, 14))
         ctk.CTkLabel(self.max_card, text="UPPER RANGE", font=("Segoe UI", 10, "bold"), text_color=THEME["text_muted"]).pack(pady=(6, 0))
         self.max_val = ctk.CTkLabel(self.max_card, text="$0.00", font=("Segoe UI", 13, "bold"), text_color="#F59E0B")
@@ -174,7 +178,6 @@ class BudgetRangeGauge(ctk.CTkFrame):
         self.max_val.configure(text=proj_max_str)
         
         self.health_badge.configure(text=health_text, text_color=health_color)
-        # Choose badge background based on health color
         if "High" in health_text or "Exceed" in health_text:
             self.health_badge.configure(fg_color="#7F1D1D")
         elif "Moderate" in health_text:
@@ -193,9 +196,10 @@ class BudgetRangeGauge(ctk.CTkFrame):
 
 
 class ChartContainer(ctk.CTkFrame):
-    """Container for Matplotlib charts with dark theme styling."""
+    """Container for Matplotlib charts with modern aesthetic dark theme styling."""
     def __init__(self, master, title: str = "", **kwargs):
-        super().__init__(master, fg_color=THEME["card_dark"], corner_radius=12, border_width=1, border_color="#334155", **kwargs)
+        super().__init__(master, fg_color=THEME["card_dark"], corner_radius=12, 
+                         border_width=1, border_color=THEME["border_dark"], **kwargs)
         
         self.title_lbl = ctk.CTkLabel(self, text=title, font=("Segoe UI", 13, "bold"), text_color=THEME["text_main"])
         self.title_lbl.pack(anchor="w", padx=16, pady=(12, 6))
@@ -233,11 +237,11 @@ class ChartContainer(ctk.CTkFrame):
                 sizes, labels=labels, colors=colors, autopct='%1.1f%%',
                 startangle=140, pctdistance=0.75,
                 textprops={'color': THEME["text_main"], 'fontsize': 8.5},
-                wedgeprops={'width': 0.45, 'edgecolor': THEME["card_dark"], 'linewidth': 2}
+                wedgeprops={'width': 0.45, 'edgecolor': THEME["card_dark"], 'linewidth': 2.5}
             )
             for autotext in autotexts:
                 autotext.set_color('#FFFFFF')
-                autotext.set_fontsize(8)
+                autotext.set_fontsize(8.5)
                 autotext.set_weight('bold')
         else:
             ax.text(0.5, 0.5, "No Expenses Recorded", horizontalalignment='center',
@@ -257,18 +261,16 @@ class ChartContainer(ctk.CTkFrame):
         ax.set_facecolor(THEME["card_dark"])
 
         if daily_totals:
-            # Extract day numbers e.g. "12" from "2026-08-12"
             days = [d.split("-")[-1] for d, _ in daily_totals]
             amounts = [amt for _, amt in daily_totals]
             
-            bars = ax.bar(days, amounts, color="#3B82F6", width=0.6, edgecolor="#1D4ED8", linewidth=1)
+            bars = ax.bar(days, amounts, color=THEME["accent_primary"], width=0.6, edgecolor=THEME["accent_hover"], linewidth=1)
             
             ax.tick_params(colors=THEME["text_muted"], labelsize=8)
             ax.set_xlabel("Day of Month", color=THEME["text_muted"], fontsize=9, labelpad=4)
             ax.set_ylabel(f"Spent ({currency})", color=THEME["text_muted"], fontsize=9, labelpad=4)
-            ax.grid(axis='y', linestyle='--', alpha=0.2, color='#94A3B8')
+            ax.grid(axis='y', linestyle='--', alpha=0.15, color='#94A3B8')
             
-            # Remove spines
             for spine in ax.spines.values():
                 spine.set_visible(False)
         else:
@@ -295,7 +297,7 @@ class ChartContainer(ctk.CTkFrame):
 
         ax.tick_params(colors=THEME["text_muted"], labelsize=8.5)
         ax.set_ylabel(f"Total Spent ({currency})", color=THEME["text_muted"], fontsize=9)
-        ax.grid(axis='y', linestyle='--', alpha=0.2, color='#94A3B8')
+        ax.grid(axis='y', linestyle='--', alpha=0.15, color='#94A3B8')
         
         for spine in ax.spines.values():
             spine.set_visible(False)
@@ -306,7 +308,7 @@ class ChartContainer(ctk.CTkFrame):
             max_idx = month_values.index(max_val)
             bars[max_idx].set_color("#F59E0B")
             
-        ax.legend(facecolor=THEME["card_dark"], edgecolor="#334155", labelcolor=THEME["text_main"], fontsize=8)
+        ax.legend(facecolor=THEME["card_dark"], edgecolor=THEME["border_dark"], labelcolor=THEME["text_main"], fontsize=8)
         self.fig.tight_layout()
         self._embed_figure()
 
