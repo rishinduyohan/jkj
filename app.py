@@ -72,6 +72,156 @@ class BudgetTrackerApp(ctk.CTk):
         # Show default page (Dashboard)
         self.show_page("dashboard")
 
+        # Check First Time Setup
+        self.after(300, self.check_first_time_setup)
+
+    def check_first_time_setup(self):
+        """Prompt user on first launch to set their estimated monthly budget."""
+        is_done = self.db.get_setting("first_setup_done", "false")
+        if is_done.lower() != "true":
+            self.open_first_time_budget_modal()
+
+    def open_first_time_budget_modal(self):
+        """Welcome popup for first-time onboarding to set estimated budget & currency."""
+        modal = ctk.CTkToplevel(self)
+        modal.title("Welcome to My Budget Tracker")
+        modal.geometry("500x560")
+        modal.minsize(460, 520)
+        modal.configure(fg_color=THEME["bg_dark"])
+        modal.transient(self)
+        modal.grab_set()
+
+        m_frame = ctk.CTkFrame(
+            modal, 
+            fg_color=THEME["card_dark"], 
+            corner_radius=12,
+            border_width=1,
+            border_color=THEME["border_dark"]
+        )
+        m_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Header
+        ctk.CTkLabel(
+            m_frame, 
+            text="✨ Welcome to My Budget Tracker", 
+            font=("Segoe UI", 16), 
+            text_color=THEME["text_main"]
+        ).pack(anchor="w", padx=20, pady=(18, 4))
+
+        ctk.CTkLabel(
+            m_frame, 
+            text="Please set your estimated monthly budget & currency to begin tracking.", 
+            font=("Segoe UI", 11), 
+            text_color=THEME["text_sub"]
+        ).pack(anchor="w", padx=20, pady=(0, 16))
+
+        inner_box = ctk.CTkFrame(m_frame, fg_color="transparent")
+        inner_box.pack(fill="both", expand=True, padx=20, pady=(0, 16))
+
+        # Currency Selection
+        ctk.CTkLabel(
+            inner_box, 
+            text="Choose Currency:", 
+            font=("Segoe UI", 11), 
+            text_color=THEME["text_muted"]
+        ).pack(anchor="w", pady=(0, 3))
+
+        curr_combo = ctk.CTkComboBox(
+            inner_box, 
+            values=["Rs", "$", "€", "£", "₹", "¥", "A$", "C$"],
+            width=160
+        )
+        curr_combo.pack(anchor="w", pady=(0, 12))
+        curr_combo.set(self.db.get_setting("currency", "Rs"))
+
+        # Estimated Monthly Budget
+        ctk.CTkLabel(
+            inner_box, 
+            text="Estimated Monthly Budget Limit:", 
+            font=("Segoe UI", 11), 
+            text_color=THEME["text_muted"]
+        ).pack(anchor="w", pady=(0, 3))
+
+        budget_entry = ctk.CTkEntry(inner_box, placeholder_text="e.g. 15000.00", font=("Segoe UI", 12))
+        budget_entry.pack(fill="x", pady=(0, 14))
+        budget_entry.insert(0, self.db.get_setting("monthly_budget", "1500.0"))
+
+        # Daily Meal Baseline Targets
+        ctk.CTkLabel(
+            inner_box, 
+            text="Daily Meal Budget Estimates:", 
+            font=("Segoe UI", 11), 
+            text_color=THEME["text_muted"]
+        ).pack(anchor="w", pady=(0, 4))
+
+        meal_grid = ctk.CTkFrame(inner_box, fg_color="transparent")
+        meal_grid.pack(fill="x", pady=(0, 16))
+        meal_grid.grid_columnconfigure((0, 1), weight=1)
+
+        ctk.CTkLabel(meal_grid, text="🍳 Breakfast:", font=("Segoe UI", 11), text_color=THEME["meal_breakfast"]).grid(row=0, column=0, sticky="w", padx=2, pady=2)
+        b_in = ctk.CTkEntry(meal_grid, width=120)
+        b_in.grid(row=1, column=0, sticky="w", padx=2, pady=(0, 8))
+        b_in.insert(0, self.db.get_setting("breakfast_target", "5.0"))
+
+        ctk.CTkLabel(meal_grid, text="🥗 Lunch:", font=("Segoe UI", 11), text_color=THEME["meal_lunch"]).grid(row=0, column=1, sticky="w", padx=2, pady=2)
+        l_in = ctk.CTkEntry(meal_grid, width=120)
+        l_in.grid(row=1, column=1, sticky="w", padx=2, pady=(0, 8))
+        l_in.insert(0, self.db.get_setting("lunch_target", "10.0"))
+
+        ctk.CTkLabel(meal_grid, text="🍲 Dinner:", font=("Segoe UI", 11), text_color=THEME["meal_dinner"]).grid(row=2, column=0, sticky="w", padx=2, pady=2)
+        d_in = ctk.CTkEntry(meal_grid, width=120)
+        d_in.grid(row=3, column=0, sticky="w", padx=2, pady=(0, 4))
+        d_in.insert(0, self.db.get_setting("dinner_target", "12.0"))
+
+        ctk.CTkLabel(meal_grid, text="🛍️ Other:", font=("Segoe UI", 11), text_color=THEME["meal_other"]).grid(row=2, column=1, sticky="w", padx=2, pady=2)
+        o_in = ctk.CTkEntry(meal_grid, width=120)
+        o_in.grid(row=3, column=1, sticky="w", padx=2, pady=(0, 4))
+        o_in.insert(0, self.db.get_setting("other_target", "10.0"))
+
+        def save_and_continue():
+            try:
+                mb_val = float(budget_entry.get().strip())
+                b_val = float(b_in.get().strip())
+                l_val = float(l_in.get().strip())
+                d_val = float(d_in.get().strip())
+                o_val = float(o_in.get().strip())
+                c_val = curr_combo.get().strip()
+
+                if mb_val <= 0:
+                    messagebox.showerror("Error", "Please enter a budget greater than zero.")
+                    return
+
+                self.db.set_setting("monthly_budget", str(mb_val))
+                self.db.set_setting("currency", c_val)
+                self.db.set_setting("breakfast_target", str(b_val))
+                self.db.set_setting("lunch_target", str(l_val))
+                self.db.set_setting("dinner_target", str(d_val))
+                self.db.set_setting("other_target", str(o_val))
+                self.db.set_setting("first_setup_done", "true")
+
+                modal.destroy()
+                self.refresh_dashboard()
+                self.load_settings_values()
+
+                # Prompt to add first expense
+                if messagebox.askyesno("Setup Complete", "Budget setup successfully! Would you like to log your first expense now?"):
+                    self.open_quick_meal_modal()
+            except ValueError:
+                messagebox.showerror("Invalid Input", "Please ensure all values are valid numbers.")
+
+        save_btn = ctk.CTkButton(
+            inner_box, 
+            text="✓ Save Budget & Start Tracking", 
+            font=("Segoe UI", 12),
+            fg_color=THEME["accent_primary"], 
+            hover_color=THEME["accent_hover"],
+            height=38, 
+            corner_radius=8, 
+            cursor="hand2",
+            command=save_and_continue
+        )
+        save_btn.pack(fill="x", pady=(10, 0))
+
     def _build_sidebar(self):
         """Constructs modern left sidebar navigation."""
         self.sidebar = ctk.CTkFrame(
@@ -225,7 +375,7 @@ class BudgetTrackerApp(ctk.CTk):
             self.load_settings_values()
 
     # ==========================================
-    # 1. DASHBOARD VIEW (Clean, Simple, Uncomplicated)
+    # 1. DASHBOARD VIEW
     # ==========================================
     def _create_dashboard_page(self) -> ctk.CTkScrollableFrame:
         page = ctk.CTkScrollableFrame(self.content_container, fg_color=THEME["bg_dark"])
@@ -254,7 +404,7 @@ class BudgetTrackerApp(ctk.CTk):
         )
         add_btn.pack(side="right")
 
-        # Plain Text Forecast Box (Clear & Easy to Read)
+        # Plain Text Forecast Box
         self.forecast_box = ctk.CTkFrame(
             page, 
             fg_color=THEME["card_dark"], 
@@ -393,7 +543,14 @@ class BudgetTrackerApp(ctk.CTk):
         mb = proj["monthly_budget"]
         rem = mb - proj_exp
 
-        if rem >= 0:
+        if proj["current_spend"] == 0:
+            forecast_msg = (
+                f"💡 Monthly Goal: Your budget is set to {cur}{mb:,.2f}. "
+                f"Use '+ Add Expense' or the Quick Log buttons to record your first meal/expense!"
+            )
+            self.forecast_box.configure(border_color=THEME["border_dark"])
+            self.forecast_text_lbl.configure(text=forecast_msg, text_color=THEME["text_main"])
+        elif rem >= 0:
             forecast_msg = (
                 f"💡 Spending Forecast: If you spend ~{cur}{daily_avg:.2f} per day, "
                 f"your estimated total this month will be {cur}{proj_exp:,.2f}. "
@@ -508,21 +665,6 @@ class BudgetTrackerApp(ctk.CTk):
         
         btn_box = ctk.CTkFrame(header, fg_color="transparent")
         btn_box.pack(side="right")
-
-        seed_btn = ctk.CTkButton(
-            btn_box, 
-            text="⚡ Add Sample Data", 
-            font=("Segoe UI", 11),
-            fg_color=THEME["card_dark"], 
-            hover_color=THEME["card_hover"],
-            border_width=1,
-            border_color=THEME["border_dark"],
-            corner_radius=6, 
-            height=32, 
-            cursor="hand2",
-            command=self.seed_sample_data
-        )
-        seed_btn.pack(side="left", padx=6)
 
         add_btn = ctk.CTkButton(
             btn_box, 
@@ -1169,7 +1311,7 @@ class BudgetTrackerApp(ctk.CTk):
         
         self.set_currency = ctk.CTkComboBox(
             b_grid, 
-            values=["$", "€", "£", "₹", "¥", "Rs", "A$", "C$"], 
+            values=["Rs", "$", "€", "£", "₹", "¥", "A$", "C$"], 
             width=140
         )
         self.set_currency.grid(row=1, column=1, sticky="w", pady=(0, 10))
@@ -1252,9 +1394,12 @@ class BudgetTrackerApp(ctk.CTk):
         )
         self.set_theme_mode.pack(side="left")
 
-        # Save Button
+        # Action Buttons Row
+        action_row = ctk.CTkFrame(page, fg_color="transparent")
+        action_row.pack(anchor="w", padx=24, pady=(8, 30))
+
         save_btn = ctk.CTkButton(
-            page, 
+            action_row, 
             text="💾 Save Settings", 
             font=("Segoe UI", 12),
             fg_color=THEME["accent_primary"], 
@@ -1264,16 +1409,37 @@ class BudgetTrackerApp(ctk.CTk):
             cursor="hand2",
             command=self.save_settings
         )
-        save_btn.pack(anchor="w", padx=24, pady=(8, 30))
+        save_btn.pack(side="left", padx=(0, 12))
+
+        reset_btn = ctk.CTkButton(
+            action_row, 
+            text="🗑️ Clear All Expense Data", 
+            font=("Segoe UI", 11),
+            fg_color="#7F1D1D", 
+            hover_color="#991B1B",
+            corner_radius=8, 
+            height=38, 
+            cursor="hand2",
+            command=self.reset_all_data
+        )
+        reset_btn.pack(side="left")
 
         return page
+
+    def reset_all_data(self):
+        """Clears all expenses from DB."""
+        if messagebox.askyesno("Confirm Clear All Data", "Are you sure you want to clear all logged expenses? This cannot be undone."):
+            self.db.clear_all_expenses()
+            self.refresh_dashboard()
+            self.refresh_expenses_table()
+            messagebox.showinfo("Cleared", "All expenses have been cleared.")
 
     def load_settings_values(self):
         """Populate settings input fields with current database values."""
         self.set_monthly_budget.delete(0, "end")
-        self.set_monthly_budget.insert(0, self.db.get_setting("monthly_budget", "500.0"))
+        self.set_monthly_budget.insert(0, self.db.get_setting("monthly_budget", "1500.0"))
 
-        self.set_currency.set(self.db.get_setting("currency", "$"))
+        self.set_currency.set(self.db.get_setting("currency", "Rs"))
 
         self.set_b_target.delete(0, "end")
         self.set_b_target.insert(0, self.db.get_setting("breakfast_target", "5.0"))
@@ -1503,39 +1669,6 @@ class BudgetTrackerApp(ctk.CTk):
             command=save_action
         )
         action_btn.pack(fill="x", pady=(4, 0))
-
-    def seed_sample_data(self):
-        """Utility to populate sample transactions for immediate visualization testing."""
-        if messagebox.askyesno("Seed Sample Data", "Would you like to populate realistic sample expenses across the current and previous months for testing?"):
-            import random
-            today = date.today()
-            sample_meals = {
-                "Breakfast": [("Oatmeal & Fruits", "Food & Dining", 4.50), ("Coffee & Croissant", "Food & Dining", 5.50), ("Eggs & Toast", "Food & Dining", 6.00), ("Pancakes & Juice", "Food & Dining", 7.00)],
-                "Lunch": [("Chicken Caesar Salad", "Food & Dining", 11.50), ("Sushi Bento Box", "Food & Dining", 14.00), ("Burrito Bowl", "Food & Dining", 10.50), ("Sandwich & Iced Tea", "Food & Dining", 9.00)],
-                "Dinner": [("Grilled Salmon with Veggies", "Food & Dining", 16.50), ("Pasta Bolognese", "Food & Dining", 13.00), ("Steak & Potatoes", "Food & Dining", 22.00), ("Thai Curry & Rice", "Food & Dining", 15.00)],
-                "Other": [("Groceries Supermarket", "Groceries", 45.00), ("Metro Card Topup", "Transportation", 20.00), ("Movie Ticket", "Entertainment", 12.50), ("Pharmacy Medicine", "Health & Fitness", 18.00), ("Electric Bill", "Utilities & Bills", 65.00)]
-            }
-
-            # Seed for current month up to today
-            for day in range(1, today.day + 1):
-                d_str = f"{today.year:04d}-{today.month:02d}-{day:02d}"
-                # Breakfast
-                b_title, b_cat, b_base = random.choice(sample_meals["Breakfast"])
-                self.db.add_expense(d_str, "Breakfast", b_cat, b_title, b_base + random.uniform(-0.5, 1.5))
-                # Lunch
-                l_title, l_cat, l_base = random.choice(sample_meals["Lunch"])
-                self.db.add_expense(d_str, "Lunch", l_cat, l_title, l_base + random.uniform(-1.0, 2.0))
-                # Dinner
-                d_title, d_cat, d_base = random.choice(sample_meals["Dinner"])
-                self.db.add_expense(d_str, "Dinner", d_cat, d_title, d_base + random.uniform(-1.5, 3.0))
-                # Occasional Other expense
-                if random.random() > 0.5:
-                    o_title, o_cat, o_base = random.choice(sample_meals["Other"])
-                    self.db.add_expense(d_str, "Other", o_cat, o_title, o_base + random.uniform(-2.0, 5.0))
-
-            messagebox.showinfo("Sample Data Added", "Successfully loaded sample expenses! You can now explore all dashboard metrics and reports.")
-            self.refresh_dashboard()
-            self.refresh_expenses_table()
 
 
 if __name__ == "__main__":

@@ -65,13 +65,19 @@ class Database:
                 "lunch_target": "10.0",
                 "dinner_target": "12.0",
                 "other_target": "10.0",
-                "app_theme": "Dark"
+                "app_theme": "Dark",
+                "first_setup_done": "false"
             }
             for k, v in default_settings.items():
                 cursor.execute("""
                     INSERT OR IGNORE INTO settings (key, value)
                     VALUES (?, ?)
                 """, (k, v))
+
+    def clear_all_expenses(self):
+        """Clears all expenses from the database."""
+        with self.get_connection() as conn:
+            conn.cursor().execute("DELETE FROM expenses")
 
     # --- Setting Operations ---
     def get_setting(self, key: str, default: str = "") -> str:
